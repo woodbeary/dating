@@ -1,12 +1,47 @@
 'use client'
 
+import { useState } from 'react'
 import { Bell, Bookmark, ChevronRight, Hash, Heart, Home, Mail, MessageCircle, MoreHorizontal, Search, User, Users, Zap } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 
+const xDatingFeatures = [
+  {
+    title: "XAI Powered Dating",
+    description: "Our advanced matching algorithm uses XAI to find your perfect match.",
+    icon: Heart,
+  },
+  {
+    title: "Grok Enabled Wingman",
+    description: "Get smart suggestions for super likes with our AI assistant.",
+    icon: Zap,
+  },
+  {
+    title: "X Features Available",
+    description: "Filter matches by verification badge and other X-exclusive features.",
+    icon: User,
+  },
+  {
+    title: "Start Swiping!",
+    description: "Jump right in and start finding your perfect match today!",
+    icon: ChevronRight,
+  },
+]
+
 export function TwitterDatingLandingComponent() {
+  const [selectedTab, setSelectedTab] = useState('X Dating')
+  const [currentFeature, setCurrentFeature] = useState(0)
+
+  const nextFeature = () => setCurrentFeature((prev) => (prev + 1) % xDatingFeatures.length)
+  const prevFeature = () => setCurrentFeature((prev) => (prev - 1 + xDatingFeatures.length) % xDatingFeatures.length)
+
+  const handleGetStarted = () => {
+    // TODO: Implement Twitter OAuth
+    console.log("Initiating Twitter OAuth...")
+  }
+
   return (
     <div className="flex h-screen bg-black text-gray-200 font-sans">
       {/* Left Sidebar */}
@@ -31,22 +66,22 @@ export function TwitterDatingLandingComponent() {
             <Button
               key={index}
               variant="ghost"
-              disabled={item.label !== "Dating"}
               className={cn(
-                "w-full justify-start text-xl rounded-full relative",
-                item.label === "Dating" ? "bg-gray-800 text-white animate-pulse" : "opacity-50"
+                "w-full justify-start text-xl rounded-full",
+                item.label === "Dating" ? "bg-gray-800 text-white" : "text-gray-400"
               )}
+              onClick={() => item.label === "Dating" && setSelectedTab("X Dating")}
             >
               <item.icon className="mr-4 h-6 w-6" />
               {item.label}
               {item.label === "Dating" && (
-                <ChevronRight className="absolute right-4 top-1/2 transform -translate-y-1/2 animate-bounce h-5 w-5" />
+                <ChevronRight className="ml-auto h-5 w-5" />
               )}
             </Button>
           ))}
         </nav>
-        <Button disabled className="w-full mt-4 bg-blue-500 text-white rounded-full py-3 text-xl font-bold opacity-50">Post</Button>
-        <div className="mt-auto flex items-center space-x-2 opacity-50">
+        <Button className="w-full mt-4 bg-blue-500 text-white rounded-full py-3 text-xl font-bold">Post</Button>
+        <div className="mt-auto flex items-center space-x-2">
           <Avatar>
             <AvatarImage src="/placeholder.svg?height=40&width=40" alt="@user" />
             <AvatarFallback>U</AvatarFallback>
@@ -55,43 +90,93 @@ export function TwitterDatingLandingComponent() {
             <p className="font-semibold">User</p>
             <p className="text-gray-500">@user</p>
           </div>
-          <Button variant="ghost" size="icon" disabled><MoreHorizontal className="h-4 w-4" /></Button>
+          <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
         </div>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 border-x border-gray-800">
         <header className="p-4 border-b border-gray-800 flex space-x-12">
-          <Button variant="ghost" disabled className="text-lg font-semibold text-gray-500 opacity-50">For you</Button>
-          <Button variant="ghost" disabled className="text-lg font-semibold text-gray-500 opacity-50">Following</Button>
+          <Button 
+            variant="ghost" 
+            className={cn("text-lg font-semibold", selectedTab === "For you" ? "text-white" : "text-gray-500")}
+            onClick={() => setSelectedTab("For you")}
+          >
+            For you
+          </Button>
+          <Button 
+            variant="ghost" 
+            className={cn("text-lg font-semibold", selectedTab === "Following" ? "text-white" : "text-gray-500")}
+            onClick={() => setSelectedTab("Following")}
+          >
+            Following
+          </Button>
+          <Button 
+            variant="ghost" 
+            className={cn("text-lg font-semibold", selectedTab === "X Dating" ? "text-white" : "text-gray-500")}
+          >
+            X Dating
+          </Button>
         </header>
         <div className="p-4">
-          <div className="flex items-start space-x-4">
-            <Avatar>
-              <AvatarImage src="/placeholder.svg?height=40&width=40" alt="@user" />
-              <AvatarFallback>U</AvatarFallback>
-            </Avatar>
-            <div className="flex-1">
-              <Input disabled className="w-full bg-transparent border-none text-xl text-white placeholder-gray-600 opacity-50" placeholder="What is happening?!" />
-              <div className="flex justify-between items-center mt-4">
-                <div className="flex space-x-2">
-                  {[Hash, Bell, Mail, User].map((Icon, index) => (
-                    <Button key={index} variant="ghost" size="icon" disabled className="text-blue-400 opacity-50">
-                      <Icon className="h-5 w-5" />
-                    </Button>
-                  ))}
+          <div className="flex flex-col items-center">
+            <h1 className="text-3xl font-bold mb-8">X Dating</h1>
+            <div className="relative w-full max-w-sm aspect-[3/4] bg-gray-900 rounded-xl overflow-hidden shadow-lg mb-8">
+              {xDatingFeatures.map((feature, index) => (
+                <div
+                  key={index}
+                  className={cn(
+                    "absolute inset-0 flex flex-col items-center justify-center p-6 transition-opacity duration-300",
+                    index === currentFeature ? "opacity-100" : "opacity-0 pointer-events-none"
+                  )}
+                >
+                  <feature.icon className="w-20 h-20 mb-6 text-blue-400" />
+                  <h2 className="text-2xl font-bold mb-4">{feature.title}</h2>
+                  <p className="text-center text-gray-300 text-lg">{feature.description}</p>
                 </div>
-                <Button size="sm" disabled className="bg-blue-500 text-white rounded-full px-4 py-2 opacity-50">Post</Button>
-              </div>
+              ))}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute left-2 top-1/2 -translate-y-1/2"
+                onClick={prevFeature}
+              >
+                <ChevronRight className="h-8 w-8 rotate-180" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-2 top-1/2 -translate-y-1/2"
+                onClick={nextFeature}
+              >
+                <ChevronRight className="h-8 w-8" />
+              </Button>
             </div>
+            <div className="flex justify-center mb-8 space-x-2">
+              {xDatingFeatures.map((_, index) => (
+                <div
+                  key={index}
+                  className={cn(
+                    "w-3 h-3 rounded-full",
+                    index === currentFeature ? "bg-blue-400" : "bg-gray-600"
+                  )}
+                />
+              ))}
+            </div>
+            <Button 
+              className="bg-blue-500 hover:bg-blue-600 text-white rounded-full py-3 px-8 text-xl font-bold"
+              onClick={handleGetStarted}
+            >
+              Get Started with X Dating
+            </Button>
           </div>
         </div>
       </div>
 
       {/* Right Sidebar */}
       <div className="w-96 p-4">
-        <Input disabled className="w-full bg-gray-900 text-white placeholder-gray-500 rounded-full py-2 px-4 mb-4 opacity-50" placeholder="Search" />
-        <div className="bg-gray-900 rounded-xl p-4 mb-4 opacity-50">
+        <Input className="w-full bg-gray-900 text-white placeholder-gray-500 rounded-full py-2 px-4 mb-4" placeholder="Search" />
+        <div className="bg-gray-900 rounded-xl p-4 mb-4">
           <h2 className="text-xl font-bold mb-4">Live on X</h2>
           <div className="flex items-center space-x-2">
             <Avatar>
@@ -120,7 +205,7 @@ export function TwitterDatingLandingComponent() {
             <span className="ml-2 text-sm text-gray-500">+3</span>
           </div>
         </div>
-        <div className="bg-gray-900 rounded-xl p-4 opacity-50">
+        <div className="bg-gray-900 rounded-xl p-4">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold">Explore</h2>
             <span className="text-xs font-semibold bg-gray-800 text-gray-400 px-2 py-1 rounded">Beta</span>
@@ -146,7 +231,7 @@ export function TwitterDatingLandingComponent() {
               <p className="text-sm text-gray-500">2.2K posts</p>
             </div>
           </div>
-          <Button variant="ghost" disabled className="w-full text-blue-400 mt-4">Show more</Button>
+          <Button variant="ghost" className="w-full text-blue-400 mt-4">Show more</Button>
         </div>
       </div>
     </div>
