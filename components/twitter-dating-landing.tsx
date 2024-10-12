@@ -9,8 +9,8 @@ import { cn } from "@/lib/utils"
 
 const xDatingFeatures = [
   {
-    title: "XAI Powered Dating",
-    description: "Our advanced matching algorithm uses XAI to find your perfect match.",
+    title: "xAI Powered Dating",
+    description: "Our advanced matching algorithm uses xAI to find your perfect match.",
     icon: Heart,
   },
   {
@@ -19,8 +19,8 @@ const xDatingFeatures = [
     icon: Zap,
   },
   {
-    title: "X Features Available",
-    description: "Filter matches by verification badge and other X-exclusive features.",
+    title: "𝕏 Features Available",
+    description: "Filter matches by verification badge and other 𝕏-exclusive features.",
     icon: User,
   },
   {
@@ -31,7 +31,7 @@ const xDatingFeatures = [
 ]
 
 export function TwitterDatingLandingComponent() {
-  const [selectedTab, setSelectedTab] = useState('X Dating')
+  const [selectedTab, setSelectedTab] = useState('𝕏 Dating')
   const [currentFeature, setCurrentFeature] = useState(0)
 
   const nextFeature = () => setCurrentFeature((prev) => (prev + 1) % xDatingFeatures.length)
@@ -70,7 +70,7 @@ export function TwitterDatingLandingComponent() {
                 "w-full justify-start text-xl rounded-full",
                 item.label === "Dating" ? "bg-gray-800 text-white" : "text-gray-400"
               )}
-              onClick={() => item.label === "Dating" && setSelectedTab("X Dating")}
+              onClick={() => item.label === "Dating" && setSelectedTab("𝕏 Dating")}
             >
               <item.icon className="mr-4 h-6 w-6" />
               {item.label}
@@ -113,14 +113,14 @@ export function TwitterDatingLandingComponent() {
           </Button>
           <Button 
             variant="ghost" 
-            className={cn("text-lg font-semibold", selectedTab === "X Dating" ? "text-white" : "text-gray-500")}
+            className={cn("text-lg font-semibold", selectedTab === "𝕏 Dating" ? "text-white" : "text-gray-500")}
           >
-            X Dating
+            𝕏 Dating
           </Button>
         </header>
         <div className="p-4">
           <div className="flex flex-col items-center">
-            <h1 className="text-3xl font-bold mb-8">X Dating</h1>
+            <h1 className="text-3xl font-bold mb-8">𝕏 Dating</h1>
             <div className="relative w-full max-w-sm aspect-[3/4] bg-gray-900 rounded-xl overflow-hidden shadow-lg mb-8">
               {xDatingFeatures.map((feature, index) => (
                 <div
@@ -167,7 +167,7 @@ export function TwitterDatingLandingComponent() {
               className="bg-blue-500 hover:bg-blue-600 text-white rounded-full py-3 px-8 text-xl font-bold"
               onClick={handleGetStarted}
             >
-              Get Started with X Dating
+              Get Started
             </Button>
           </div>
         </div>
@@ -177,7 +177,7 @@ export function TwitterDatingLandingComponent() {
       <div className="w-96 p-4">
         <Input className="w-full bg-gray-900 text-white placeholder-gray-500 rounded-full py-2 px-4 mb-4" placeholder="Search" />
         <div className="bg-gray-900 rounded-xl p-4 mb-4">
-          <h2 className="text-xl font-bold mb-4">Live on X</h2>
+          <h2 className="text-xl font-bold mb-4">Live on 𝕏</h2>
           <div className="flex items-center space-x-2">
             <Avatar>
               <AvatarImage src="/placeholder.svg?height=32&width=32" alt="@user" />
