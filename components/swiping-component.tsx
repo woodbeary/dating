@@ -15,6 +15,7 @@ import { db } from "@/lib/firebase"
 import { doc, updateDoc, arrayUnion, getDoc, collection, query, where, getDocs } from "firebase/firestore"
 import { MatchComponent } from './match-component'
 import { SuperLikeModal } from './super-like-modal'
+import { MaxAIFeatureAnnouncement } from './max-ai-feature-announcement'
 
 interface Profile {
   id: string
@@ -187,31 +188,34 @@ export function SwipingComponent() {
       </div>
       
       {profiles.length > 0 && (
-        <div className="flex justify-center space-x-4 p-4">
-          <Button
-            variant="outline"
-            size="icon"
-            className="rounded-full bg-red-500 hover:bg-red-600 w-16 h-16"
-            onClick={() => handleSwipe('left', profiles[0])}
-          >
-            <X className="h-8 w-8" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            className="rounded-full bg-blue-500 hover:bg-blue-600 w-16 h-16"
-            onClick={() => handleSuperLike(profiles[0])}
-          >
-            <GitPullRequest className="h-8 w-8" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            className="rounded-full bg-green-500 hover:bg-green-600 w-16 h-16"
-            onClick={() => handleSwipe('right', profiles[0])}
-          >
-            <Heart className="h-8 w-8" />
-          </Button>
+        <div className="flex flex-col items-center space-y-4 p-4">
+          <div className="flex justify-center space-x-4">
+            <Button
+              variant="outline"
+              size="icon"
+              className="rounded-full bg-red-500 hover:bg-red-600 w-16 h-16"
+              onClick={() => handleSwipe('left', profiles[0])}
+            >
+              <X className="h-8 w-8" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="rounded-full bg-blue-500 hover:bg-blue-600 w-16 h-16"
+              onClick={() => handleSuperLike(profiles[0])}
+            >
+              <GitPullRequest className="h-8 w-8" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="rounded-full bg-green-500 hover:bg-green-600 w-16 h-16"
+              onClick={() => handleSwipe('right', profiles[0])}
+            >
+              <Heart className="h-8 w-8" />
+            </Button>
+          </div>
+          <MaxAIFeatureAnnouncement />
         </div>
       )}
 

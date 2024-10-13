@@ -62,23 +62,22 @@ export function SuperLikeModal({ profile, onClose, onSend }: SuperLikeModalProps
     if (message && session?.user?.id) {
       console.log('Sending Super Like')
       try {
-        const siteStatsRef = doc(db, "siteStats", "credits");
-        await updateDoc(siteStatsRef, {
-          credits: increment(-1), // Decrease credits by 1
-          superLikesSent: increment(1) // Increase super likes sent by 1
-        });
-        console.log('Site stats updated')
-
+        // Send the super like
         await setDoc(doc(db, "superLikes", `${session.user.id}_${profile.id}`), {
           senderId: session.user.id,
           recipientId: profile.id,
           message,
           sentAt: new Date().toISOString()
         })
-        console.log('Super Like saved to Firestore')
 
-        onSend(message)
+        // Update super likes count
+        const siteStatsRef = doc(db, "siteStats", "credits");
+        await updateDoc(siteStatsRef, {
+          superLikesSent: increment(1)
+        });
+
         console.log('Super Like sent successfully')
+        onSend(message)
       } catch (error) {
         console.error('Error sending Super Like:', error)
       }

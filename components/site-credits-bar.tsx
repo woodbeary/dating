@@ -1,40 +1,48 @@
-import { Progress } from "@/components/ui/progress"
-import { useState, useEffect } from 'react'
+'use client'
+
+import { useEffect, useState } from 'react'
 import { db } from "@/lib/firebase"
 import { doc, onSnapshot } from "firebase/firestore"
 
+const INITIAL_BALANCE = 100 // $100 initial balance
+const COST_PER_SUPER_LIKE = 0.1859 // $0.1859 per super like
+
 export function SiteCreditsBar() {
-  const [credits, setCredits] = useState<number | null>(null)
-  const [superLikesSent, setSuperLikesSent] = useState<number | null>(null)
+  const [credits, setCredits] = useState<number>(INITIAL_BALANCE)
+  const [superLikesSent, setSuperLikesSent] = useState<number>(0)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    console.log("SiteCreditsBar: Initializing Firestore listener")
     const unsubscribe = onSnapshot(doc(db, "siteStats", "credits"), (doc) => {
-      console.log("SiteCreditsBar: Received Firestore update", doc.data())
       const data = doc.data()
       if (data) {
-        setCredits(data.credits || 0)
-        setSuperLikesSent(data.superLikesSent || 0)
+        const superLikes = data.superLikesSent || 0
+        setSuperLikesSent(superLikes)
+        const remainingBalance = INITIAL_BALANCE - (superLikes * COST_PER_SUPER_LIKE)
+        setCredits(Math.max(0, remainingBalance))
       }
     }, (error) => {
-      console.error("SiteCreditsBar: Firestore listener error", error)
+      console.error('Error fetching site stats:', error)
+      setError('Failed to load balance')
     })
 
-    return () => {
-      console.log("SiteCreditsBar: Unsubscribing from Firestore listener")
-      unsubscribe()
-    }
+    return () => unsubscribe()
   }, [])
 
-  console.log("SiteCreditsBar: Rendering with credits:", credits, "superLikes:", superLikesSent)
+  const creditsPercentage = (credits / INITIAL_BALANCE) * 100
 
   return (
-    <div className="w-full p-4 bg-blue-600 text-white fixed top-0 left-0 z-[9999]">
-      <Progress value={credits ?? 0} max={100} className="w-full mb-2 h-4 bg-blue-300" />
-      <div className="flex justify-between text-sm font-bold">
-        <p>XAI Credits: ${credits !== null ? credits.toFixed(2) : '0.00'}</p>
-        <p>Super Likes Sent: {superLikesSent !== null ? superLikesSent : 0}</p>
+    <div className="w-full bg-black text-white text-xs py-1 px-2 fixed top-0 left-0 z-[9999] flex justify-between items-center border-b border-gray-800">
+      <div className="flex items-center">
+        <div className="w-20 bg-gray-800 rounded-full h-2 mr-2">
+          <div 
+            className="bg-blue-400 h-2 rounded-full" 
+            style={{ width: `${creditsPercentage}%` }}
+          ></div>
+        </div>
+        <span>{error || `$${credits.toFixed(2)}`}</span>
       </div>
+      <span>Super Likes: {superLikesSent}</span>
     </div>
   )
 }
