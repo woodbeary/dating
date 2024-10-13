@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Bell, Bookmark, ChevronRight, Hash, Heart, Home, Mail, MessageCircle, MoreHorizontal, Search, User, Users, Zap } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { signIn } from "next-auth/react"
 import { useMediaQuery } from 'react-responsive'
+import { motion, AnimatePresence } from 'framer-motion'
 
 const xDatingFeatures = [
   {
@@ -41,8 +42,13 @@ export function XDatingLandingComponent() {
   const prevFeature = () => setCurrentFeature((prev) => (prev - 1 + xDatingFeatures.length) % xDatingFeatures.length)
 
   const handleGetStarted = () => {
-    signIn("twitter", { callbackUrl: "/x-dating/swipe" })
+    signIn("x", { callbackUrl: "/x-dating/swipe" })
   }
+
+  useEffect(() => {
+    const timer = setInterval(nextFeature, 5000) // Auto-advance every 5 seconds
+    return () => clearInterval(timer)
+  }, [])
 
   return (
     <div className={cn(
@@ -130,28 +136,41 @@ export function XDatingLandingComponent() {
         </header>
         <div className="p-4 pb-20">
           <div className="flex flex-col items-center">
-            <h1 className="text-3xl font-bold mb-8">𝕏 Dating</h1>
-            <div className={cn(
-              "relative w-full max-w-sm aspect-[3/4] bg-gray-900 rounded-xl overflow-hidden shadow-lg mb-8",
-              isMobile && "max-w-full"
-            )}>
-              {xDatingFeatures.map((feature, index) => (
-                <div
-                  key={index}
-                  className={cn(
-                    "absolute inset-0 flex flex-col items-center justify-center p-6 transition-opacity duration-300",
-                    index === currentFeature ? "opacity-100" : "opacity-0 pointer-events-none"
-                  )}
+            <motion.h1 
+              className="text-4xl font-bold mb-8 bg-gradient-to-r from-blue-400 to-purple-500 text-transparent bg-clip-text"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              𝕏 Dating
+            </motion.h1>
+            <motion.div 
+              className={cn(
+                "relative w-full max-w-sm aspect-[3/4] bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl overflow-hidden shadow-lg",
+                isMobile && "max-w-full"
+              )}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentFeature}
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  transition={{ duration: 0.3 }}
+                  className="absolute inset-0 flex flex-col items-center justify-center p-6"
                 >
-                  <feature.icon className="w-20 h-20 mb-6 text-blue-400" />
-                  <h2 className="text-2xl font-bold mb-4">{feature.title}</h2>
-                  <p className="text-center text-gray-300 text-lg">{feature.description}</p>
-                </div>
-              ))}
+                  {React.createElement(xDatingFeatures[currentFeature].icon, { className: "w-24 h-24 mb-6 text-blue-400" })}
+                  <h2 className="text-2xl font-bold mb-4 text-center">{xDatingFeatures[currentFeature].title}</h2>
+                  <p className="text-center text-gray-300 text-lg">{xDatingFeatures[currentFeature].description}</p>
+                </motion.div>
+              </AnimatePresence>
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute left-2 top-1/2 -translate-y-1/2"
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-gray-800 bg-opacity-50 hover:bg-opacity-75 transition-all duration-200"
                 onClick={prevFeature}
               >
                 <ChevronRight className="h-8 w-8 rotate-180" />
@@ -159,29 +178,33 @@ export function XDatingLandingComponent() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute right-2 top-1/2 -translate-y-1/2"
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-gray-800 bg-opacity-50 hover:bg-opacity-75 transition-all duration-200"
                 onClick={nextFeature}
               >
                 <ChevronRight className="h-8 w-8" />
               </Button>
-            </div>
-            <div className="flex justify-center mb-8 space-x-2">
-              {xDatingFeatures.map((_, index) => (
-                <div
-                  key={index}
-                  className={cn(
-                    "w-3 h-3 rounded-full",
-                    index === currentFeature ? "bg-blue-400" : "bg-gray-600"
-                  )}
-                />
-              ))}
-            </div>
-            <Button 
-              className="bg-blue-500 hover:bg-blue-600 text-white rounded-full py-3 px-8 text-xl font-bold w-full max-w-sm"
-              onClick={handleGetStarted}
-            >
-              Get Started
-            </Button>
+              
+              {/* Bottom section inside the card */}
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-gray-900 to-transparent p-4">
+                <div className="flex justify-center mb-4 space-x-2">
+                  {xDatingFeatures.map((_, index) => (
+                    <div
+                      key={index}
+                      className={cn(
+                        "w-2 h-2 rounded-full transition-all duration-200",
+                        index === currentFeature ? "bg-blue-400 scale-125" : "bg-gray-600"
+                      )}
+                    />
+                  ))}
+                </div>
+                <Button 
+                  className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-full py-2 px-6 text-lg font-bold w-full transition-all duration-200 transform hover:scale-105"
+                  onClick={handleGetStarted}
+                >
+                  Get Started
+                </Button>
+              </div>
+            </motion.div>
           </div>
         </div>
       </div>
