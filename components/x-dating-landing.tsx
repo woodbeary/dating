@@ -120,7 +120,7 @@ export function XDatingLandingComponent() {
 
       {/* Main Content */}
       <div className={cn(
-        "flex-1 border-x border-gray-800 overflow-y-auto",
+        "flex-1 border-x border-gray-800 overflow-y-auto relative",
         isMobile && "border-x-0"
       )}>
         <header className="sticky top-0 z-10 bg-black p-4 border-b border-gray-800 flex space-x-4 overflow-x-auto">
@@ -217,6 +217,18 @@ export function XDatingLandingComponent() {
               </div>
             </motion.div>
           </div>
+        </div>
+
+        {/* Add the credit at the bottom */}
+        <div className="absolute bottom-2 right-2 text-xs text-gray-500">
+          <a 
+            href="https://x.com/imjacoblopez" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="hover:text-gray-400 transition-colors"
+          >
+            Created by @imjacoblopez
+          </a>
         </div>
       </div>
 
