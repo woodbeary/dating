@@ -1,10 +1,10 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion, useAnimation } from 'framer-motion'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Heart, X, Home, Star } from "lucide-react"
+import { Heart, X, Star, Home, Loader2, GitPullRequest } from "lucide-react"
 import { useMediaQuery } from 'react-responsive'
 import { useRouter } from 'next/navigation'
 import { cn } from "@/lib/utils"
@@ -23,7 +23,7 @@ interface Profile {
   image: string
 }
 
-const SWIPE_THRESHOLD = 100 // pixels to trigger a swipe
+const SWIPE_THRESHOLD = 150 // Increased threshold for less sensitivity
 
 export function SwipingComponent() {
   const { data: session } = useSession()
@@ -33,21 +33,16 @@ export function SwipingComponent() {
   const [matchedProfile, setMatchedProfile] = useState<Profile | null>(null)
   const [showSuperLikeModal, setShowSuperLikeModal] = useState(false)
   const [currentProfile, setCurrentProfile] = useState<Profile | null>(null)
-  const [noMoreProfiles, setNoMoreProfiles] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     fetchProfiles()
   }, [session])
 
-  useEffect(() => {
-    if (profiles.length === 0) {
-      setNoMoreProfiles(true)
-    }
-  }, [profiles])
-
   const fetchProfiles = async () => {
     if (!session?.user?.id) return
 
+    setIsLoading(true)
     const userRef = doc(db, "users", session.user.id)
     const userDoc = await getDoc(userRef)
     const userData = userDoc.data()
@@ -64,6 +59,7 @@ export function SwipingComponent() {
     })
 
     setProfiles(fetchedProfiles)
+    setIsLoading(false)
   }
 
   const [springs, api] = useSprings(profiles.length, i => ({
@@ -74,7 +70,7 @@ export function SwipingComponent() {
   }))
 
   const bind = useDrag(({ args: [index], down, movement: [mx], direction: [xDir], velocity }) => {
-    const trigger = velocity[0] > 0.2
+    const trigger = Math.abs(mx) > SWIPE_THRESHOLD
     const dir = xDir < 0 ? -1 : 1
     if (!down && trigger) {
       handleSwipe(dir > 0 ? 'right' : 'left', profiles[index])
@@ -151,7 +147,9 @@ export function SwipingComponent() {
       </div>
       
       <div className="flex-grow flex justify-center items-center overflow-hidden">
-        {profiles.length > 0 ? (
+        {isLoading ? (
+          <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+        ) : profiles.length > 0 ? (
           springs.map(({ x, y, scale, zIndex }, i) => (
             <animated.div
               key={profiles[i].id}
@@ -165,7 +163,7 @@ export function SwipingComponent() {
             >
               <div className={cn(
                 "bg-gray-800 rounded-xl overflow-hidden shadow-lg",
-                isMobile ? "w-[90vw] h-[70vh]" : "w-80 h-96"
+                isMobile ? "w-[90vw] h-[60vh]" : "w-80 h-96"
               )}>
                 <div className="h-3/4 bg-gray-700 flex justify-center items-center">
                   <Avatar className="w-full h-full rounded-none">
@@ -201,18 +199,18 @@ export function SwipingComponent() {
           <Button
             variant="outline"
             size="icon"
-            className="rounded-full bg-green-500 hover:bg-green-600 w-16 h-16"
-            onClick={() => handleSwipe('right', profiles[0])}
+            className="rounded-full bg-blue-500 hover:bg-blue-600 w-16 h-16"
+            onClick={() => handleSuperLike(profiles[0])}
           >
-            <Heart className="h-8 w-8" />
+            <GitPullRequest className="h-8 w-8" />
           </Button>
           <Button
             variant="outline"
             size="icon"
-            className="rounded-full bg-blue-500 hover:bg-blue-600 w-16 h-16"
-            onClick={() => handleSuperLike(profiles[0])}
+            className="rounded-full bg-green-500 hover:bg-green-600 w-16 h-16"
+            onClick={() => handleSwipe('right', profiles[0])}
           >
-            <Star className="h-8 w-8" />
+            <Heart className="h-8 w-8" />
           </Button>
         </div>
       )}
@@ -229,7 +227,6 @@ export function SwipingComponent() {
           profile={currentProfile}
           onClose={() => setShowSuperLikeModal(false)}
           onSend={(message: string) => {
-            // Handle sending super like
             handleSwipe('right', currentProfile)
             setShowSuperLikeModal(false)
           }}

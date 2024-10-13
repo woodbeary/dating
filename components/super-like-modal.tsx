@@ -1,10 +1,12 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { db } from "@/lib/firebase"
 import { doc, updateDoc, increment, setDoc } from "firebase/firestore"
 import { useSession } from "next-auth/react"
+import xai from '@/lib/xai'
+import { X } from 'lucide-react'
 
 interface SuperLikeModalProps {
   profile: {
@@ -24,24 +26,60 @@ export function SuperLikeModal({ profile, onClose, onSend }: SuperLikeModalProps
 
   const generateMessage = async () => {
     setIsGenerating(true)
-    // Simulate Grok AI message generation
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    setMessage("Hey there! I couldn't help but notice your profile. Want to chat?")
-    setIsGenerating(false)
+    setMessage('')
+
+    try {
+      console.log('Fetching user context for:', profile.username)
+      const userContext = await fetchUserContext(profile.username)
+      console.log('User context:', userContext)
+
+      console.log('Initiating Grok API call')
+      const stream = await xai.chat.completions.create({
+        model: 'grok-2-mini-public',
+        messages: [
+          { role: 'system', content: 'You are a helpful wingman assistant. Your task is to generate a witty and engaging message for a dating app super like. Use the provided user context to personalize the message.' },
+          { role: 'user', content: `Generate a super like message for ${profile.name}. Here's some context about them: ${JSON.stringify(userContext)}` }
+        ],
+        stream: true,
+      })
+
+      console.log('Grok API call initiated, streaming response')
+      for await (const chunk of stream) {
+        const content = chunk.choices[0]?.delta?.content || ''
+        console.log('Received chunk:', content)
+        setMessage(prev => prev + content)
+      }
+      console.log('Grok message generation completed')
+    } catch (error) {
+      console.error('Error generating message:', error)
+      setMessage('Sorry, there was an error generating the message. Please try again.')
+    } finally {
+      setIsGenerating(false)
+    }
   }
 
   const handleSend = async () => {
     if (message && session?.user?.id) {
-      await updateDoc(doc(db, "siteStats", "credits"), {
-        credits: increment(-1)
-      })
-      await setDoc(doc(db, "superLikes", `${session.user.id}_${profile.id}`), {
-        senderId: session.user.id,
-        recipientId: profile.id,
-        message,
-        sentAt: new Date().toISOString()
-      })
-      onSend(message)
+      console.log('Sending Super Like')
+      try {
+        await updateDoc(doc(db, "siteStats", "credits"), {
+          credits: increment(-1)
+        })
+        console.log('Site credits updated')
+
+        await setDoc(doc(db, "superLikes", `${session.user.id}_${profile.id}`), {
+          senderId: session.user.id,
+          recipientId: profile.id,
+          message,
+          sentAt: new Date().toISOString()
+        })
+        console.log('Super Like saved to Firestore')
+
+        onSend(message)
+        console.log('Super Like sent successfully')
+      } catch (error) {
+        console.error('Error sending Super Like:', error)
+      }
     }
   }
 
@@ -52,28 +90,46 @@ export function SuperLikeModal({ profile, onClose, onSend }: SuperLikeModalProps
       exit={{ opacity: 0 }}
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
     >
-      <div className="bg-gray-800 p-8 rounded-xl text-center max-w-md w-full">
+      <div className="bg-gray-800 p-8 rounded-xl text-center max-w-md w-full relative">
+        <button 
+          onClick={onClose}
+          className="absolute top-2 right-2 text-gray-400 hover:text-white"
+        >
+          <X size={24} />
+        </button>
         <h2 className="text-3xl font-bold mb-4">Super Like</h2>
         <Avatar className="w-24 h-24 mx-auto mb-4">
           <AvatarImage src={profile.image} alt={profile.name} />
           <AvatarFallback>{profile.name[0]}</AvatarFallback>
         </Avatar>
         <p className="text-xl mb-6">Send a Super Like to {profile.name}!</p>
-        <Button onClick={generateMessage} disabled={isGenerating} className="mb-4">
-          {isGenerating ? "Generating..." : "Generate Message"}
-        </Button>
         <div className="bg-gray-700 p-4 rounded mb-4 h-32 overflow-auto">
           {message || "Your message will appear here..."}
         </div>
-        <div className="space-y-4">
-          <Button onClick={handleSend} disabled={!message} className="w-full">
-            Send Super Like
-          </Button>
-          <Button onClick={onClose} variant="outline" className="w-full">
-            Cancel
-          </Button>
-        </div>
+        <Button 
+          onClick={isGenerating ? undefined : message ? handleSend : generateMessage} 
+          disabled={isGenerating}
+          className="w-full bg-blue-500 hover:bg-blue-600"
+        >
+          {isGenerating ? "Generating..." : message ? "Confirm" : "Generate Message"}
+        </Button>
       </div>
     </motion.div>
   )
+}
+
+async function fetchUserContext(username: string) {
+  console.log('Fetching user context for:', username)
+  try {
+    const response = await fetch(`/api/twitter-user?username=${username}`)
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    const data = await response.json()
+    console.log('User context fetched successfully:', data)
+    return data
+  } catch (error) {
+    console.error('Error fetching user context:', error)
+    throw error
+  }
 }

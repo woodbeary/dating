@@ -10,7 +10,7 @@ export default async function SwipePage() {
   }
 
   return (
-    <main>
+    <main className="bg-black min-h-screen">
       <SwipingComponent />
     </main>
   )
