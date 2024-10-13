@@ -1,9 +1,9 @@
-import { TwitterDatingLandingComponent } from "@/components/twitter-dating-landing";
+import { XDatingLandingComponent } from "@/components/x-dating-landing";
 
 export default function Home() {
   return (
     <main>
-      <TwitterDatingLandingComponent />
+      <XDatingLandingComponent />
     </main>
   );
 }
