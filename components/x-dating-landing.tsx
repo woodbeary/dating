@@ -51,18 +51,20 @@ export function XDatingLandingComponent() {
       try {
         console.log("Initiating Twitter sign-in");
         const result = await signIn("twitter", { 
-          callbackUrl: "/x-dating/swipe", 
+          callbackUrl: `${process.env.NEXT_PUBLIC_URL}/x-dating/swipe`, 
           redirect: false 
         });
         console.log("Sign-in result:", result);
         if (result?.error) {
           console.error("Sign in error:", result.error);
+          // Handle the error (e.g., show an error message to the user)
         } else if (result?.url) {
           console.log("Redirecting to:", result.url);
           router.push(result.url);
         }
       } catch (error) {
         console.error("Sign in error:", error);
+        // Handle the error (e.g., show an error message to the user)
       }
     }
   }

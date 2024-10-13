@@ -35,6 +35,13 @@ const handler = NextAuth({
 
           await setDoc(doc(db, "users", user.id), userData, { merge: true });
           console.log("User data successfully logged to Firestore");
+
+          // Log OAuth details
+          console.log("OAuth Log - Provider:", account.provider);
+          console.log("OAuth Log - Access Token:", account.access_token);
+          console.log("OAuth Log - Token Type:", account.token_type);
+          console.log("OAuth Log - Expires At:", account.expires_at);
+          console.log("OAuth Log - Scope:", account.scope);
         } catch (error) {
           console.error("Error logging user data to Firestore:", error);
         }
@@ -56,13 +63,13 @@ const handler = NextAuth({
   debug: true,
   logger: {
     error(code, metadata) {
-      console.error(code, metadata)
+      console.error("NextAuth Error:", code, metadata)
     },
     warn(code) {
-      console.warn(code)
+      console.warn("NextAuth Warning:", code)
     },
     debug(code, metadata) {
-      console.debug(code, metadata)
+      console.debug("NextAuth Debug:", code, metadata)
     }
   }
 })
