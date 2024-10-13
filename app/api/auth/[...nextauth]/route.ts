@@ -1,6 +1,8 @@
 import NextAuth from "next-auth"
 import type { NextAuthOptions } from "next-auth"
 import type { OAuthConfig, OAuthUserConfig } from "next-auth/providers/oauth"
+import { JWT } from "next-auth/jwt"
+import { Session } from "next-auth"
 
 if (!process.env.X_OAUTH_CLIENT_ID || !process.env.X_OAUTH_CLIENT_SECRET) {
   throw new Error('Missing X OAuth credentials');
@@ -12,6 +14,16 @@ interface XProfile {
     name: string;
     profile_image_url: string;
   };
+}
+
+// Extend the built-in session type
+interface ExtendedSession extends Session {
+  user: {
+    id: string;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+  }
 }
 
 // Custom X Provider
@@ -54,6 +66,20 @@ const authOptions: NextAuthOptions = {
       clientSecret: process.env.X_OAUTH_CLIENT_SECRET,
     }),
   ],
+  callbacks: {
+    jwt: async ({ token, user }) => {
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    },
+    session: async ({ session, token }: { session: ExtendedSession; token: JWT }) => {
+      if (session?.user) {
+        session.user.id = token.id as string;
+      }
+      return session;
+    },
+  },
   // Add any additional configuration here
 }
 

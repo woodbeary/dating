@@ -42,7 +42,7 @@ export function XDatingLandingComponent() {
   const prevFeature = () => setCurrentFeature((prev) => (prev - 1 + xDatingFeatures.length) % xDatingFeatures.length)
 
   const handleGetStarted = () => {
-    signIn("x", { callbackUrl: "/x-dating/swipe" })
+    signIn("x", { callbackUrl: "/x-dating/profile" })
   }
 
   useEffect(() => {
