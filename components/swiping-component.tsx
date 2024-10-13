@@ -15,6 +15,7 @@ import { db } from "@/lib/firebase"
 import { doc, updateDoc, arrayUnion, getDoc, collection, query, where, getDocs } from "firebase/firestore"
 import { MatchComponent } from './match-component'
 import { SuperLikeModal } from './super-like-modal'
+import { Progress } from "@/components/ui/progress"
 import { MaxAIFeatureAnnouncement } from './max-ai-feature-announcement'
 
 interface Profile {
@@ -35,6 +36,8 @@ export function SwipingComponent() {
   const [showSuperLikeModal, setShowSuperLikeModal] = useState(false)
   const [currentProfile, setCurrentProfile] = useState<Profile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [totalProfiles, setTotalProfiles] = useState(0)
+  const [viewedProfiles, setViewedProfiles] = useState(0)
 
   useEffect(() => {
     fetchProfiles()
@@ -60,6 +63,8 @@ export function SwipingComponent() {
     })
 
     setProfiles(fetchedProfiles)
+    setTotalProfiles(fetchedProfiles.length)
+    setViewedProfiles(0)
     setIsLoading(false)
   }
 
@@ -118,6 +123,7 @@ export function SwipingComponent() {
       }
     }
 
+    setViewedProfiles(prev => prev + 1)
     setProfiles(prev => prev.filter(p => p.id !== profile.id))
   }
 
@@ -214,6 +220,12 @@ export function SwipingComponent() {
             >
               <Heart className="h-8 w-8" />
             </Button>
+          </div>
+          <div className="w-full max-w-md">
+            <Progress value={(viewedProfiles / totalProfiles) * 100} className="w-full" />
+            <p className="text-center mt-2 text-sm text-gray-400">
+              {viewedProfiles} of {totalProfiles} profiles viewed
+            </p>
           </div>
           <MaxAIFeatureAnnouncement />
         </div>
