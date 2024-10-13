@@ -22,7 +22,7 @@ const handler = NextAuth({
           const userData = {
             id: user.id,
             name: user.name || null,
-            email: user.email || null, // Handle potentially undefined email
+            email: user.email || null,
             image: user.image || null,
             username: (profile as any).data?.username || null,
             createdAt: serverTimestamp(),
@@ -44,6 +44,9 @@ const handler = NextAuth({
       return true;
     },
     async session({ session, token }) {
+      console.log("Session Callback - Session:", session);
+      console.log("Session Callback - Token:", token);
+
       if (session.user) {
         session.user.id = token.sub!;
       }

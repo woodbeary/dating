@@ -49,7 +49,10 @@ export function XDatingLandingComponent() {
       router.push('/x-dating/profile')
     } else {
       try {
-        const result = await signIn("twitter", { callbackUrl: "/x-dating/swipe", redirect: false });
+        const result = await signIn("twitter", { 
+          callbackUrl: "/x-dating/swipe", 
+          redirect: false 
+        });
         if (result?.error) {
           console.error("Sign in error:", result.error);
         } else if (result?.url) {
