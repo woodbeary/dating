@@ -106,6 +106,7 @@ export default function ProfilePage() {
       setMatchesToShow(prev => prev.filter(match => match.id !== userId))
       setSuperLikes(prev => prev.filter(like => like.recipientId !== userId))
       window.open(`https://twitter.com/intent/user?user_id=${userId}`, '_blank')
+      setBlockingUser(null) // Close the dialog after blocking
     }
   }
 
@@ -192,7 +193,7 @@ export default function ProfilePage() {
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setBlockingUser(null)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleBlock}>Block</Button>
+            <Button variant="destructive" onClick={() => blockingUser && handleBlock(blockingUser.id)}>Block</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

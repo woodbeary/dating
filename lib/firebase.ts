@@ -16,14 +16,11 @@ const db = getFirestore(app)
 
 export async function initializeSiteStats() {
   const siteStatsRef = doc(db, "siteStats", "credits");
-  const siteStatsDoc = await getDoc(siteStatsRef);
-
-  if (!siteStatsDoc.exists()) {
-    await setDoc(siteStatsRef, {
-      credits: 100, // Starting credits
-      superLikesSent: 0
-    });
-  }
+  await setDoc(siteStatsRef, {
+    credits: 100, // Starting credits
+    superLikesSent: 0
+  }, { merge: true });
+  console.log("Site stats initialized/updated");
 }
 
 export { db }
