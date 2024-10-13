@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils"
 import { signIn } from "next-auth/react"
 import { useMediaQuery } from 'react-responsive'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useRouter } from 'next/navigation'
 
 const xDatingFeatures = [
   {
@@ -37,12 +38,22 @@ export function XDatingLandingComponent() {
   const [selectedTab, setSelectedTab] = useState('𝕏 Dating')
   const [currentFeature, setCurrentFeature] = useState(0)
   const isMobile = useMediaQuery({ query: '(max-width: 640px)' })
+  const router = useRouter()
 
   const nextFeature = () => setCurrentFeature((prev) => (prev + 1) % xDatingFeatures.length)
   const prevFeature = () => setCurrentFeature((prev) => (prev - 1 + xDatingFeatures.length) % xDatingFeatures.length)
 
-  const handleGetStarted = () => {
-    signIn("x", { callbackUrl: "/x-dating/profile" })
+  const handleGetStarted = async () => {
+    try {
+      const result = await signIn("x", { callbackUrl: "/x-dating/profile", redirect: false });
+      if (result?.error) {
+        console.error("Sign in error:", result.error);
+      } else if (result?.url) {
+        router.push(result.url);
+      }
+    } catch (error) {
+      console.error("Sign in error:", error);
+    }
   }
 
   useEffect(() => {

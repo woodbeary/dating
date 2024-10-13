@@ -41,10 +41,11 @@ const XProvider = (options: OAuthUserConfig<any>): OAuthConfig<any> => ({
     params: { "user.fields": "profile_image_url" }
   },
   profile(profile: XProfile) {
+    console.log("X Profile:", profile);  // Add this line for debugging
     return {
       id: profile.data.id,
       name: profile.data.name,
-      email: null, // X doesn't provide email by default
+      email: null,
       image: profile.data.profile_image_url,
     }
   },
@@ -67,20 +68,22 @@ const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    jwt: async ({ token, user }) => {
+    async jwt({ token, user, account }) {
+      console.log("JWT Callback - Token:", token, "User:", user, "Account:", account);  // Add this line
       if (user) {
         token.id = user.id;
       }
       return token;
     },
-    session: async ({ session, token }: { session: ExtendedSession; token: JWT }) => {
+    async session({ session, token }: { session: ExtendedSession; token: JWT }) {
+      console.log("Session Callback - Session:", session, "Token:", token);  // Add this line
       if (session?.user) {
         session.user.id = token.id as string;
       }
       return session;
     },
   },
-  // Add any additional configuration here
+  debug: true,  // Add this line to enable debug logs
 }
 
 const handler = NextAuth(authOptions)
