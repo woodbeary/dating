@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
-import { signIn } from "next-auth/react"
+import { signIn, useSession } from "next-auth/react"
 import { useMediaQuery } from 'react-responsive'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
@@ -39,20 +39,25 @@ export function XDatingLandingComponent() {
   const [currentFeature, setCurrentFeature] = useState(0)
   const isMobile = useMediaQuery({ query: '(max-width: 640px)' })
   const router = useRouter()
+  const { data: session } = useSession()
 
   const nextFeature = () => setCurrentFeature((prev) => (prev + 1) % xDatingFeatures.length)
   const prevFeature = () => setCurrentFeature((prev) => (prev - 1 + xDatingFeatures.length) % xDatingFeatures.length)
 
   const handleGetStarted = async () => {
-    try {
-      const result = await signIn("twitter", { callbackUrl: "/x-dating/swipe", redirect: false });
-      if (result?.error) {
-        console.error("Sign in error:", result.error);
-      } else if (result?.url) {
-        router.push(result.url);
+    if (session) {
+      router.push('/x-dating/profile')
+    } else {
+      try {
+        const result = await signIn("twitter", { callbackUrl: "/x-dating/swipe", redirect: false });
+        if (result?.error) {
+          console.error("Sign in error:", result.error);
+        } else if (result?.url) {
+          router.push(result.url);
+        }
+      } catch (error) {
+        console.error("Sign in error:", error);
       }
-    } catch (error) {
-      console.error("Sign in error:", error);
     }
   }
 
@@ -212,7 +217,7 @@ export function XDatingLandingComponent() {
                   className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-full py-2 px-6 text-lg font-bold w-full transition-all duration-200 transform hover:scale-105"
                   onClick={handleGetStarted}
                 >
-                  Get Started
+                  {session ? "Continue" : "Get Started"}
                 </Button>
               </div>
             </motion.div>

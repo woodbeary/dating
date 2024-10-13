@@ -1,0 +1,92 @@
+API Models
+The models that your team can use via the xAI API
+Our flagship models
+Our flagship models are the best in their class and are used by our customers to power their applications.
+Grok 2 mini
+Grok-2 mini is a more lightweight and affordable language model that offers a balance between speed and answer quality.
+Name
+grok-2-mini-public
+
+Input modalities
+TEXT
+Output modalities
+TEXT
+Context window
+32768
+Grok 2
+Grok-2 is our frontier language model with state-of-the-art reasoning capabilities, best for complex and multi-step use cases.
+Name
+grok-2-public
+
+Input modalities
+TEXT
+Output modalities
+TEXT
+Context window
+32768
+Available clusters
+Our API is hosted on different clusters to minimize latency and inference costs for your enterprise.
+us-east-1
+Language models
+Language models are used to generate text, images, and audio.
+Model	Input	Output	Context	
+Text
+
+Image
+
+Completion
+RPS	RPM	RPH	RPD
+grok-2-mini
+TEXT
+TEXT
+32768	$4.20	
+-
+$6.90	
+1
+10
+-
+-
+grok-2
+TEXT
+TEXT
+32768	$4.20	
+-
+$6.90	
+1
+1
+20
+-
+grok-2-mini-public
+TEXT
+TEXT
+32768	$4.20	
+-
+$6.90	
+1
+10
+-
+-
+grok-2-public
+TEXT
+TEXT
+32768	$4.20	
+-
+$6.90	
+1
+1
+20
+-
+Embedding models
+Embedding models are used to generate embeddings for text or image.
+Model	Input	
+Text
+
+Image
+RPS	RPM	RPH	RPD
+v2
+TEXT
+$0.01	$0.00	
+0
+-
+-
+-

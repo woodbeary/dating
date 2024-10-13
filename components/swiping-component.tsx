@@ -4,8 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
-import { Heart, X, RefreshCw, Home } from "lucide-react"
+import { Heart, X, Home, Star } from "lucide-react"
 import { useMediaQuery } from 'react-responsive'
 import { useRouter } from 'next/navigation'
 import { cn } from "@/lib/utils"
@@ -13,7 +12,9 @@ import { useSession } from "next-auth/react"
 import { useSprings, animated } from '@react-spring/web'
 import { useDrag } from '@use-gesture/react'
 import { db } from "@/lib/firebase"
-import { doc, updateDoc, arrayUnion, getDoc } from "firebase/firestore"
+import { doc, updateDoc, arrayUnion, getDoc, collection, query, where, getDocs } from "firebase/firestore"
+import { MatchComponent } from './match-component'
+import { SuperLikeModal } from './super-like-modal'
 
 interface Profile {
   id: string
@@ -29,20 +30,41 @@ export function SwipingComponent() {
   const router = useRouter()
   const isMobile = useMediaQuery({ query: '(max-width: 640px)' })
   const [profiles, setProfiles] = useState<Profile[]>([])
+  const [matchedProfile, setMatchedProfile] = useState<Profile | null>(null)
+  const [showSuperLikeModal, setShowSuperLikeModal] = useState(false)
+  const [currentProfile, setCurrentProfile] = useState<Profile | null>(null)
+  const [noMoreProfiles, setNoMoreProfiles] = useState(false)
 
   useEffect(() => {
-    // Fetch profiles from Firestore
-    const fetchProfiles = async () => {
-      // Implement fetching logic here
-      // For now, we'll use dummy data
-      setProfiles([
-        { id: '1', name: 'User 1', username: '@user1', image: '/placeholder.svg' },
-        { id: '2', name: 'User 2', username: '@user2', image: '/placeholder.svg' },
-        { id: '3', name: 'User 3', username: '@user3', image: '/placeholder.svg' },
-      ])
-    }
     fetchProfiles()
-  }, [])
+  }, [session])
+
+  useEffect(() => {
+    if (profiles.length === 0) {
+      setNoMoreProfiles(true)
+    }
+  }, [profiles])
+
+  const fetchProfiles = async () => {
+    if (!session?.user?.id) return
+
+    const userRef = doc(db, "users", session.user.id)
+    const userDoc = await getDoc(userRef)
+    const userData = userDoc.data()
+
+    const q = query(collection(db, "users"), where("id", "!=", session.user.id))
+    const querySnapshot = await getDocs(q)
+    
+    const fetchedProfiles: Profile[] = []
+    querySnapshot.forEach((doc) => {
+      const data = doc.data() as Profile
+      if (!userData?.swipes || !userData.swipes[data.id]) {
+        fetchedProfiles.push(data)
+      }
+    })
+
+    setProfiles(fetchedProfiles)
+  }
 
   const [springs, api] = useSprings(profiles.length, i => ({
     x: 0,
@@ -51,8 +73,8 @@ export function SwipingComponent() {
     zIndex: profiles.length - i,
   }))
 
-  const bind = useDrag(({ args: [index], down, movement: [mx], direction: [xDir], velocity: [vx] }) => {
-    const trigger = Math.abs(vx) > 0.2
+  const bind = useDrag(({ args: [index], down, movement: [mx], direction: [xDir], velocity }) => {
+    const trigger = velocity[0] > 0.2
     const dir = xDir < 0 ? -1 : 1
     if (!down && trigger) {
       handleSwipe(dir > 0 ? 'right' : 'left', profiles[index])
@@ -94,7 +116,7 @@ export function SwipingComponent() {
           await updateDoc(swipedUserRef, {
             matches: arrayUnion(session.user.id)
           })
-          console.log("It's a match!")
+          setMatchedProfile(profile)
         }
       }
     }
@@ -103,7 +125,12 @@ export function SwipingComponent() {
   }
 
   const handleGoHome = () => {
-    router.push('/')
+    router.push('/x-dating/profile')
+  }
+
+  const handleSuperLike = (profile: Profile) => {
+    setCurrentProfile(profile)
+    setShowSuperLikeModal(true)
   }
 
   return (
@@ -179,7 +206,34 @@ export function SwipingComponent() {
           >
             <Heart className="h-8 w-8" />
           </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            className="rounded-full bg-blue-500 hover:bg-blue-600 w-16 h-16"
+            onClick={() => handleSuperLike(profiles[0])}
+          >
+            <Star className="h-8 w-8" />
+          </Button>
         </div>
+      )}
+
+      {matchedProfile && (
+        <MatchComponent
+          profile={matchedProfile}
+          onClose={() => setMatchedProfile(null)}
+        />
+      )}
+
+      {showSuperLikeModal && currentProfile && (
+        <SuperLikeModal
+          profile={currentProfile}
+          onClose={() => setShowSuperLikeModal(false)}
+          onSend={(message: string) => {
+            // Handle sending super like
+            handleSwipe('right', currentProfile)
+            setShowSuperLikeModal(false)
+          }}
+        />
       )}
     </div>
   )
