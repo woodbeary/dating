@@ -45,7 +45,7 @@ export function XDatingLandingComponent() {
 
   const handleGetStarted = async () => {
     try {
-      const result = await signIn("x", { callbackUrl: "/x-dating/profile", redirect: false });
+      const result = await signIn("twitter", { callbackUrl: "/x-dating/swipe", redirect: false });
       if (result?.error) {
         console.error("Sign in error:", result.error);
       } else if (result?.url) {

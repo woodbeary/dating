@@ -1,91 +1,56 @@
 import NextAuth from "next-auth"
-import type { NextAuthOptions } from "next-auth"
-import type { OAuthConfig, OAuthUserConfig } from "next-auth/providers/oauth"
-import { JWT } from "next-auth/jwt"
-import { Session } from "next-auth"
+import TwitterProvider from "next-auth/providers/twitter"
+import { db } from "@/lib/firebase"
+import { doc, setDoc, serverTimestamp } from "firebase/firestore"
 
-if (!process.env.X_OAUTH_CLIENT_ID || !process.env.X_OAUTH_CLIENT_SECRET) {
-  throw new Error('Missing X OAuth credentials');
-}
-
-interface XProfile {
-  data: {
-    id: string;
-    name: string;
-    profile_image_url: string;
-  };
-}
-
-// Extend the built-in session type
-interface ExtendedSession extends Session {
-  user: {
-    id: string;
-    name?: string | null;
-    email?: string | null;
-    image?: string | null;
-  }
-}
-
-// Custom X Provider
-const XProvider = (options: OAuthUserConfig<any>): OAuthConfig<any> => ({
-  id: "x",
-  name: "X",
-  type: "oauth",
-  authorization: {
-    url: "https://twitter.com/i/oauth2/authorize",
-    params: { scope: "tweet.read users.read offline.access" }
-  },
-  token: "https://api.twitter.com/2/oauth2/token",
-  userinfo: {
-    url: "https://api.twitter.com/2/users/me",
-    params: { "user.fields": "profile_image_url" }
-  },
-  profile(profile: XProfile) {
-    console.log("X Profile:", profile);  // Add this line for debugging
-    return {
-      id: profile.data.id,
-      name: profile.data.name,
-      email: null,
-      image: profile.data.profile_image_url,
-    }
-  },
-  style: {
-    logo: "/x-logo.svg",
-    logoDark: "/x-logo-dark.svg",
-    bgDark: "#000000",
-    bg: "#ffffff",
-    text: "#000000",
-    textDark: "#ffffff",
-  },
-  options
-})
-
-const authOptions: NextAuthOptions = {
+const handler = NextAuth({
   providers: [
-    XProvider({
-      clientId: process.env.X_OAUTH_CLIENT_ID,
-      clientSecret: process.env.X_OAUTH_CLIENT_SECRET,
+    TwitterProvider({
+      clientId: process.env.X_OAUTH_CLIENT_ID!,
+      clientSecret: process.env.X_OAUTH_CLIENT_SECRET!,
+      version: "2.0",
     }),
   ],
   callbacks: {
-    async jwt({ token, user, account }) {
-      console.log("JWT Callback - Token:", token, "User:", user, "Account:", account);  // Add this line
-      if (user) {
-        token.id = user.id;
+    async signIn({ user, account, profile }) {
+      console.log("Sign In Callback - User:", user);
+      console.log("Sign In Callback - Account:", account);
+      console.log("Sign In Callback - Profile:", profile);
+
+      if (user && account && profile) {
+        try {
+          const userData = {
+            id: user.id,
+            name: user.name || null,
+            email: user.email || null, // Handle potentially undefined email
+            image: user.image || null,
+            username: (profile as any).data?.username || null,
+            createdAt: serverTimestamp(),
+            lastLoginAt: serverTimestamp(),
+            provider: account.provider,
+            twitterId: (profile as any).data?.id || null,
+          };
+
+          console.log("Attempting to save user data:", userData);
+
+          await setDoc(doc(db, "users", user.id), userData, { merge: true });
+          console.log("User data successfully logged to Firestore");
+        } catch (error) {
+          console.error("Error logging user data to Firestore:", error);
+        }
+      } else {
+        console.log("Missing user, account, or profile data");
       }
-      return token;
+      return true;
     },
-    async session({ session, token }: { session: ExtendedSession; token: JWT }) {
-      console.log("Session Callback - Session:", session, "Token:", token);  // Add this line
-      if (session?.user) {
-        session.user.id = token.id as string;
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.sub!;
       }
       return session;
     },
   },
-  debug: true,  // Add this line to enable debug logs
-}
-
-const handler = NextAuth(authOptions)
+  debug: true,
+})
 
 export { handler as GET, handler as POST }
