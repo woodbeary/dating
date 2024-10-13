@@ -49,13 +49,16 @@ export function XDatingLandingComponent() {
       router.push('/x-dating/profile')
     } else {
       try {
+        console.log("Initiating Twitter sign-in");
         const result = await signIn("twitter", { 
           callbackUrl: "/x-dating/swipe", 
           redirect: false 
         });
+        console.log("Sign-in result:", result);
         if (result?.error) {
           console.error("Sign in error:", result.error);
         } else if (result?.url) {
+          console.log("Redirecting to:", result.url);
           router.push(result.url);
         }
       } catch (error) {
@@ -68,6 +71,10 @@ export function XDatingLandingComponent() {
     const timer = setInterval(nextFeature, 5000) // Auto-advance every 5 seconds
     return () => clearInterval(timer)
   }, [])
+
+  useEffect(() => {
+    console.log("Current session:", session);
+  }, [session]);
 
   return (
     <div className={cn(
