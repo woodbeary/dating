@@ -10,6 +10,7 @@ import { useSprings, animated } from '@react-spring/web'
 import { useDrag } from '@use-gesture/react'
 import { useMediaQuery } from 'react-responsive'
 import { useRouter } from 'next/navigation'
+import { cn } from "@/lib/utils"
 
 interface Profile {
   id: string
@@ -92,8 +93,8 @@ export function SwipingComponent() {
     <div className="flex flex-col h-screen bg-black text-white">
       <div className="p-4">
         <Progress value={creditsPercentage} className="w-full" />
-        <p className="text-center mt-2">Site Credits Remaining: ${siteCredits.toFixed(2)}</p>
-        <p className="text-center text-sm text-gray-400">Total Swipes: {totalSwipes}</p>
+        <p className="text-center mt-2">Site Credits: ${siteCredits.toFixed(2)}</p>
+        <p className="text-center text-sm text-gray-400">Swipes: {totalSwipes}</p>
       </div>
       
       <div className="flex-grow flex justify-center items-center overflow-hidden">
@@ -109,7 +110,10 @@ export function SwipingComponent() {
               }}
               {...bind(i)}
             >
-              <div className={`bg-gray-800 rounded-xl overflow-hidden shadow-lg ${isMobile ? 'w-64 h-80' : 'w-80 h-96'}`}>
+              <div className={cn(
+                "bg-gray-800 rounded-xl overflow-hidden shadow-lg",
+                isMobile ? "w-[90vw] h-[70vh]" : "w-80 h-96"
+              )}>
                 <div className="h-3/4 bg-gray-700 flex justify-center items-center">
                   <Avatar className="w-full h-full rounded-none">
                     <AvatarImage src={profiles[i].profileImage} alt={profiles[i].name} className="object-cover" />
@@ -124,9 +128,9 @@ export function SwipingComponent() {
             </animated.div>
           ))
         ) : (
-          <div className="text-center">
-            <h2 className="text-2xl font-bold mb-4">No more profiles to show</h2>
-            <p className="text-gray-400 mb-8">You've seen all available profiles for now.</p>
+          <div className="text-center p-4">
+            <h2 className="text-2xl font-bold mb-4">No more profiles</h2>
+            <p className="text-gray-400 mb-8">You've seen all available profiles.</p>
             <div className="flex justify-center space-x-4">
               <Button onClick={handleRefresh} className="flex items-center">
                 <RefreshCw className="mr-2 h-4 w-4" />
@@ -134,7 +138,7 @@ export function SwipingComponent() {
               </Button>
               <Button onClick={handleGoHome} className="flex items-center">
                 <Home className="mr-2 h-4 w-4" />
-                Go Home
+                Home
               </Button>
             </div>
           </div>
@@ -146,18 +150,24 @@ export function SwipingComponent() {
           <Button
             variant="outline"
             size="icon"
-            className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600"
+            className={cn(
+              "rounded-full bg-red-500 hover:bg-red-600",
+              isMobile ? "w-14 h-14" : "w-16 h-16"
+            )}
             onClick={() => handleSwipe('left')}
           >
-            <X className="h-8 w-8" />
+            <X className={cn(isMobile ? "h-6 w-6" : "h-8 w-8")} />
           </Button>
           <Button
             variant="outline"
             size="icon"
-            className="w-16 h-16 rounded-full bg-green-500 hover:bg-green-600"
+            className={cn(
+              "rounded-full bg-green-500 hover:bg-green-600",
+              isMobile ? "w-14 h-14" : "w-16 h-16"
+            )}
             onClick={() => handleSwipe('right')}
           >
-            <Heart className="h-8 w-8" />
+            <Heart className={cn(isMobile ? "h-6 w-6" : "h-8 w-8")} />
           </Button>
         </div>
       )}
