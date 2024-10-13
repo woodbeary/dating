@@ -12,17 +12,28 @@ export async function GET(req: NextRequest) {
 
   const client = new TwitterApi(process.env.X_BEARER_TOKEN!)
   const username = req.nextUrl.searchParams.get('username')
+  const userId = req.nextUrl.searchParams.get('userId')
 
-  if (!username) {
-    console.log('Username not provided')
-    return NextResponse.json({ error: 'Username is required' }, { status: 400 })
+  if (!username && !userId) {
+    console.log('Neither username nor userId provided')
+    return NextResponse.json({ error: 'Username or userId is required' }, { status: 400 })
   }
 
-  console.log('Fetching X data for username:', username)
+  console.log('Fetching X data for:', userId || username)
   try {
-    console.log('Finding user by username')
-    const user = await client.v2.userByUsername(username)
+    let user;
+    if (userId) {
+      console.log('Finding user by ID')
+      user = await client.v2.user(userId)
+    } else {
+      console.log('Finding user by username')
+      user = await client.v2.userByUsername(username!)
+    }
     console.log('User found:', user.data)
+
+    if (!user.data) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
 
     console.log('Fetching user tweets')
     const tweets = await client.v2.userTimeline(user.data.id, {
@@ -39,8 +50,11 @@ export async function GET(req: NextRequest) {
     console.log('Prepared response:', response)
 
     return NextResponse.json(response)
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching X data:', error)
-    return NextResponse.json({ error: 'Error fetching X data' }, { status: 500 })
+    if (error.code === 404) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+    return NextResponse.json({ error: 'Error fetching X data', details: error.message }, { status: 500 })
   }
 }

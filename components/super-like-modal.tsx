@@ -37,7 +37,7 @@ export function SuperLikeModal({ profile, onClose, onSend }: SuperLikeModalProps
       const stream = await xai.chat.completions.create({
         model: 'grok-2-mini-public',
         messages: [
-          { role: 'system', content: 'You are a helpful wingman assistant. Your task is to generate a witty and engaging message for a dating app super like. Use the provided user context to personalize the message.' },
+          { role: 'system', content: 'You are Grok, an AI wingman assistant. Your task is to generate a persuasive and engaging message for a dating app super like. The message should be from the perspective of an mutual wingman trying to convince the recipient to give the sender a chance. Use the provided user contexts to personalize the message.' },
           { role: 'user', content: `Generate a super like message for ${profile.name}. Here's some context about them: ${JSON.stringify(userContext)}` }
         ],
         stream: true,
@@ -62,10 +62,12 @@ export function SuperLikeModal({ profile, onClose, onSend }: SuperLikeModalProps
     if (message && session?.user?.id) {
       console.log('Sending Super Like')
       try {
-        await updateDoc(doc(db, "siteStats", "credits"), {
-          credits: increment(-1)
-        })
-        console.log('Site credits updated')
+        const siteStatsRef = doc(db, "siteStats", "credits");
+        await updateDoc(siteStatsRef, {
+          credits: increment(-1), // Decrease credits by 1
+          superLikesSent: increment(1) // Increase super likes sent by 1
+        });
+        console.log('Site stats updated')
 
         await setDoc(doc(db, "superLikes", `${session.user.id}_${profile.id}`), {
           senderId: session.user.id,

@@ -1,5 +1,5 @@
 import { initializeApp, getApps } from "firebase/app"
-import { getFirestore } from "firebase/firestore"
+import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore"
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -13,5 +13,17 @@ const firebaseConfig = {
 // Initialize Firebase
 let app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
 const db = getFirestore(app)
+
+export async function initializeSiteStats() {
+  const siteStatsRef = doc(db, "siteStats", "credits");
+  const siteStatsDoc = await getDoc(siteStatsRef);
+
+  if (!siteStatsDoc.exists()) {
+    await setDoc(siteStatsRef, {
+      credits: 100, // Starting credits
+      superLikesSent: 0
+    });
+  }
+}
 
 export { db }
